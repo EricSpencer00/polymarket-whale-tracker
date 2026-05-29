@@ -47,7 +47,7 @@ class PolyAPIError(RuntimeError):
 class PolymarketPublicClient:
     """Thin wrapper over Polymarket's three public REST hosts."""
 
-    def __init__(self, timeout: float = 15.0, user_agent: str = "polywhale/0.1"):
+    def __init__(self, timeout: float = 30.0, user_agent: str = "polywhale/0.1"):
         self.timeout = timeout
         self.s = requests.Session()
         self.s.headers["User-Agent"] = user_agent
@@ -188,16 +188,16 @@ class PolymarketPublicClient:
         question_ilike: Optional[str] = None,
         tag_slug: Optional[str] = None,
         tag_id: Optional[int] = None,
-        active: bool = True,
-        closed: bool = False,
+        active: Optional[bool] = True,
+        closed: Optional[bool] = False,
         order: str = "volume24hr",
         ascending: bool = False,
         limit: int = 50,
         offset: int = 0,
     ) -> List[Dict[str, Any]]:
         params = {
-            "active": "true" if active else "false",
-            "closed": "true" if closed else "false",
+            "active": _bool_param(active),
+            "closed": _bool_param(closed),
             "question_ilike": question_ilike,
             "tag_slug": tag_slug,
             "tag_id": tag_id,
@@ -275,3 +275,14 @@ class PolymarketPublicClient:
 
 def now_ms() -> int:
     return int(time.time() * 1000)
+
+
+def _bool_param(v: Optional[bool]) -> Optional[str]:
+    """Serialize a tri-state bool for gamma query strings.
+
+    None -> dropped from URL (no filter).
+    True/False -> "true"/"false".
+    """
+    if v is None:
+        return None
+    return "true" if v else "false"

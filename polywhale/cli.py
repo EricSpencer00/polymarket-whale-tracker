@@ -15,6 +15,8 @@ from polywhale.analyze import fingerprint
 from polywhale.api import PolymarketPublicClient
 from polywhale.discover import discover_whales
 from polywhale.macro import macro_snapshot
+from polywhale.pnl import reconstruct as reconstruct_pnl
+from polywhale.scan import scan_fast_markets, top_traders
 from polywhale.watch import watch_wallets
 
 
@@ -61,6 +63,40 @@ def main(argv: list | None = None) -> int:
     p_wt.add_argument("--resolve", action="store_true",
                        help="Resolve each argument as a handle first.")
     p_wt.set_defaults(func=_cmd_watch)
+
+    p_sf = sub.add_parser("scan-fast",
+                            help="Rank wallets by USDC volume in recent fast markets.")
+    p_sf.add_argument("--asset", default="BTC")
+    p_sf.add_argument("--hours", type=float, default=6.0,
+                       help="Look-back window in hours.")
+    p_sf.add_argument("--markets", type=int, default=80,
+                       help="Maximum number of distinct markets to scan.")
+    p_sf.add_argument("--min-volume", type=float, default=1000.0)
+    p_sf.add_argument("--top", type=int, default=25)
+    p_sf.add_argument("--json", action="store_true")
+    p_sf.set_defaults(func=_cmd_scan_fast)
+
+    p_pnl = sub.add_parser("pnl", help="Reconstruct daily PnL trajectory for a wallet.")
+    p_pnl.add_argument("target", help="0x address, @handle, or polymarket.com URL")
+    p_pnl.add_argument("--days", type=int, default=30)
+    p_pnl.add_argument("--max-events", type=int, default=10000)
+    p_pnl.add_argument("--json", action="store_true")
+    p_pnl.set_defaults(func=_cmd_pnl)
+
+    p_q = sub.add_parser("qualify",
+                          help="scan-fast -> PnL filter -> ranked watchlist of steady winners.")
+    p_q.add_argument("--asset", default="BTC")
+    p_q.add_argument("--hours", type=float, default=6.0)
+    p_q.add_argument("--markets", type=int, default=80)
+    p_q.add_argument("--candidates", type=int, default=25,
+                      help="Top-N candidates by volume to evaluate PnL for.")
+    p_q.add_argument("--days", type=int, default=14,
+                      help="PnL trajectory window in days.")
+    p_q.add_argument("--min-volume", type=float, default=1000.0)
+    p_q.add_argument("--min-pnl", type=float, default=0.0)
+    p_q.add_argument("--min-steadiness", type=float, default=0.35)
+    p_q.add_argument("--json", action="store_true")
+    p_q.set_defaults(func=_cmd_qualify)
 
     args = parser.parse_args(argv)
     logging.basicConfig(
@@ -171,6 +207,138 @@ async def _run_watch(wallets: Iterable[str]) -> int:
             print(json.dumps(sig.to_dict(), separators=(",", ":")), flush=True)
     except KeyboardInterrupt:
         return 0
+    return 0
+
+
+def _cmd_scan_fast(args) -> int:
+    c = PolymarketPublicClient()
+    tallies = scan_fast_markets(
+        c, asset=args.asset, window_hours=args.hours,
+        market_cap=args.markets,
+    )
+    ranked = top_traders(tallies, min_volume_usd=args.min_volume, limit=args.top)
+
+    if args.json:
+        out = [{
+            "proxy_wallet": t.proxy_wallet,
+            "pseudonym": t.pseudonym,
+            "usdc_volume": round(t.usdc_volume, 2),
+            "trade_count": t.trade_count,
+            "buy_share": round(t.buy_share, 3),
+            "distinct_markets": t.distinct_markets,
+            "last_seen": t.last_seen,
+        } for t in ranked]
+        print(json.dumps(out, indent=2))
+        return 0
+
+    print(f"\nTop {len(ranked)} wallets by USDC volume in fast {args.asset} markets "
+          f"(last {args.hours:.1f}h):\n")
+    print(f"{'#':>3}  {'wallet':42}  {'pseudonym':22}  "
+          f"{'volume':>11}  {'trades':>7}  {'buy%':>5}  {'mkts':>4}")
+    print("-" * 108)
+    for i, t in enumerate(ranked, 1):
+        pseu = (t.pseudonym or "—")[:22]
+        print(f"{i:>3}  {t.proxy_wallet:42}  {pseu:22}  "
+              f"${t.usdc_volume:>9,.0f}  {t.trade_count:>7}  "
+              f"{t.buy_share*100:>4.0f}%  {t.distinct_markets:>4}")
+    return 0
+
+
+def _cmd_pnl(args) -> int:
+    c = PolymarketPublicClient()
+    addr = c.resolve_handle(args.target)
+    series = reconstruct_pnl(c, addr, days_back=args.days, max_events=args.max_events)
+    if args.json:
+        print(json.dumps({
+            "address": series.address,
+            "days": series.days,
+            "daily_pnl": series.daily_pnl,
+            "cumulative_pnl": series.cumulative_pnl,
+            "metrics": {
+                "n_events": series.n_events,
+                "span_days": series.span_days,
+                "total_realized_pnl": series.total_realized_pnl,
+                "slope_usd_per_day": series.slope_usd_per_day,
+                "r_squared": series.r_squared,
+                "max_drawdown": series.max_drawdown,
+                "max_drawdown_ratio": series.max_drawdown_ratio,
+                "winning_day_rate": series.winning_day_rate,
+                "steadiness": series.steadiness,
+                "verdict": series.verdict,
+            },
+        }, indent=2))
+        return 0
+    print(series.summary())
+    if series.days:
+        print("\nLast 10 days (USD):")
+        for d, dp, cp in list(zip(series.days, series.daily_pnl, series.cumulative_pnl))[-10:]:
+            arrow = "+" if dp >= 0 else "-"
+            print(f"  {d}   day {arrow}${abs(dp):>10,.2f}   cum ${cp:>11,.2f}")
+    return 0
+
+
+def _cmd_qualify(args) -> int:
+    c = PolymarketPublicClient()
+    print(f"[1/2] scanning fast {args.asset} markets...", file=sys.stderr)
+    tallies = scan_fast_markets(
+        c, asset=args.asset, window_hours=args.hours, market_cap=args.markets,
+    )
+    candidates = top_traders(
+        tallies, min_volume_usd=args.min_volume, limit=args.candidates,
+    )
+    print(f"[2/2] qualifying {len(candidates)} candidates by PnL trajectory "
+          f"(window {args.days}d)...", file=sys.stderr)
+
+    qualified = []
+    for t in candidates:
+        try:
+            series = reconstruct_pnl(c, t.proxy_wallet, days_back=args.days)
+        except Exception as e:
+            print(f"  pnl({t.proxy_wallet}) failed: {e}", file=sys.stderr)
+            continue
+        if (series.total_realized_pnl < args.min_pnl or
+                series.steadiness < args.min_steadiness):
+            continue
+        qualified.append((t, series))
+
+    qualified.sort(key=lambda ts: ts[1].steadiness, reverse=True)
+
+    if args.json:
+        out = [{
+            "proxy_wallet": t.proxy_wallet,
+            "pseudonym": t.pseudonym,
+            "scan": {
+                "usdc_volume": round(t.usdc_volume, 2),
+                "trade_count": t.trade_count,
+                "buy_share": round(t.buy_share, 3),
+                "distinct_markets": t.distinct_markets,
+            },
+            "pnl": {
+                "realized_pnl": round(s.total_realized_pnl, 2),
+                "slope_usd_per_day": round(s.slope_usd_per_day, 2),
+                "r_squared": round(s.r_squared, 3),
+                "max_drawdown": round(s.max_drawdown, 2),
+                "max_drawdown_ratio": round(s.max_drawdown_ratio, 3),
+                "winning_day_rate": round(s.winning_day_rate, 3),
+                "steadiness": round(s.steadiness, 3),
+                "verdict": s.verdict,
+                "span_days": s.span_days,
+            },
+        } for t, s in qualified]
+        print(json.dumps(out, indent=2))
+        return 0
+
+    print(f"\nQualified {args.asset} whales (volume>=${args.min_volume:.0f}, "
+          f"steady positive PnL):\n")
+    print(f"{'#':>3}  {'wallet':42}  {'pseudonym':18}  "
+          f"{'scan vol':>10}  {'PnL':>10}  {'$/day':>8}  {'R^2':>5}  {'steady':>6}  verdict")
+    print("-" * 130)
+    for i, (t, s) in enumerate(qualified, 1):
+        pseu = (t.pseudonym or "—")[:18]
+        print(f"{i:>3}  {t.proxy_wallet:42}  {pseu:18}  "
+              f"${t.usdc_volume:>8,.0f}  ${s.total_realized_pnl:>8,.0f}  "
+              f"${s.slope_usd_per_day:>6,.1f}  {s.r_squared:>5.2f}  "
+              f"{s.steadiness:>6.2f}  {s.verdict}")
     return 0
 
 

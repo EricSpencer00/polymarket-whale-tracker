@@ -46,14 +46,23 @@ Python 3.10+. The only runtime deps are `requests` and `websockets`.
 ## Quickstart
 
 ```bash
-# Find the biggest wallets across live BTC markets
-polywhale discover --asset BTC --top 20
-
-# Fingerprint a single wallet
-polywhale analyze 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5
-
 # Resolve a handle to an address
 polywhale resolve boneweeper
+
+# Find the biggest wallets across BTC markets by USD exposure
+polywhale discover --asset BTC --top 20
+
+# Rank wallets by USDC volume in fast (5m/15m) BTC markets over the last 6h
+polywhale scan-fast --asset BTC --hours 6 --top 25
+
+# Fingerprint a single wallet (algorithmic-behavior score + style)
+polywhale analyze 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5
+
+# Reconstruct a wallet's PnL trajectory (auto-buckets hourly vs daily)
+polywhale pnl 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5 --days 14
+
+# scan-fast -> PnL filter -> ranked watchlist of steady winners
+polywhale qualify --asset BTC --hours 6 --candidates 25 --min-steadiness 0.5
 
 # Macro snapshot of BTC markets
 polywhale macro --asset BTC
@@ -64,14 +73,23 @@ polywhale watch 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5
 
 Add `--json` to any command for machine-readable output.
 
+`qualify` is the main entry point for copy-trade prep: it scans recent fast
+markets, ranks wallets by USDC volume, reconstructs each candidate's PnL
+trajectory, and outputs the subset with positive realized PnL and high
+steadiness (slope, R^2 of the trend line, small drawdowns, mostly winning
+days/hours).
+
 ## Architecture
 
 ```
 polywhale/
   api.py        REST client: data-api + gamma-api + clob
   ws.py         WSS client: ws-live-data
-  discover.py   find top holders of a market / asset
+  fast.py       fast-market detector (5m/15m Up-or-Down)
+  discover.py   find top holders of a market / asset (USD exposure)
+  scan.py       rank wallets by USDC volume in fast markets
   analyze.py    algorithmic-behavior fingerprinter
+  pnl.py        PnL trajectory + steadiness metrics
   macro.py      market-landscape snapshot
   watch.py      live signal emitter (CopySignal stream)
   signal.py     CopySignal dataclass
