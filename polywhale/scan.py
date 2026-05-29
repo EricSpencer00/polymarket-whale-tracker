@@ -36,6 +36,7 @@ class TraderTally:
     distinct_markets: int = 0
     market_ids: set = field(default_factory=set)
     last_seen: int = 0
+    clips: List[float] = field(default_factory=list)
 
     def record(self, trade: dict, market_cid: str) -> None:
         try:
@@ -48,6 +49,8 @@ class TraderTally:
         ts = int(trade.get("timestamp") or 0)
         self.usdc_volume += usd
         self.trade_count += 1
+        if usd > 0:
+            self.clips.append(usd)
         if side == "BUY":
             self.buy_volume += usd
         elif side == "SELL":
@@ -64,6 +67,13 @@ class TraderTally:
     def buy_share(self) -> float:
         total = self.buy_volume + self.sell_volume
         return (self.buy_volume / total) if total else 0.0
+
+    @property
+    def minutes_since_last_trade(self) -> float:
+        import time as _time
+        if not self.last_seen:
+            return float("inf")
+        return max(0.0, (_time.time() - self.last_seen) / 60.0)
 
 
 def scan_fast_markets(

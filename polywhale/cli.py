@@ -13,6 +13,7 @@ from typing import Iterable
 from polywhale import __version__
 from polywhale.analyze import fingerprint
 from polywhale.api import PolymarketPublicClient
+from polywhale.autopilot import QualifyParams, qualify_whales, persist as persist_watchlist, style_hint_map
 from polywhale.discover import discover_whales
 from polywhale.macro import macro_snapshot
 from polywhale.pnl import reconstruct as reconstruct_pnl
@@ -97,6 +98,35 @@ def main(argv: list | None = None) -> int:
     p_q.add_argument("--min-steadiness", type=float, default=0.35)
     p_q.add_argument("--json", action="store_true")
     p_q.set_defaults(func=_cmd_qualify)
+
+    p_ap = sub.add_parser(
+        "autopilot",
+        help="Find conviction+edge BTC whales and live-stream their signals.",
+    )
+    p_ap.add_argument("--asset", default="BTC")
+    p_ap.add_argument("--hours", type=float, default=6.0,
+                       help="Scan-fast look-back in hours.")
+    p_ap.add_argument("--markets", type=int, default=80)
+    p_ap.add_argument("--candidates", type=int, default=30)
+    p_ap.add_argument("--days", type=int, default=7,
+                       help="PnL trajectory window in days.")
+    p_ap.add_argument("--min-volume", type=float, default=1500.0)
+    p_ap.add_argument("--min-pnl", type=float, default=0.0)
+    p_ap.add_argument("--min-steadiness", type=float, default=0.45)
+    p_ap.add_argument("--min-conviction", type=float, default=0.20)
+    p_ap.add_argument("--min-clip", type=float, default=0.0,
+                       help="Drop wallets whose median clip is below this USDC value.")
+    p_ap.add_argument("--max-idle-minutes", type=float, default=240.0,
+                       help="Drop wallets that haven't traded in the last N minutes.")
+    p_ap.add_argument("--top", type=int, default=10,
+                       help="Cap the watchlist to the best N wallets.")
+    p_ap.add_argument("--no-watch", action="store_true",
+                       help="Stop after qualification + persist; don't open the WSS stream.")
+    p_ap.add_argument("--no-persist", action="store_true",
+                       help="Skip writing the watchlist to data/.")
+    p_ap.add_argument("--json", action="store_true",
+                       help="Emit the qualified watchlist as JSON instead of a table.")
+    p_ap.set_defaults(func=_cmd_autopilot)
 
     args = parser.parse_args(argv)
     logging.basicConfig(
@@ -339,6 +369,75 @@ def _cmd_qualify(args) -> int:
               f"${t.usdc_volume:>8,.0f}  ${s.total_realized_pnl:>8,.0f}  "
               f"${s.slope_usd_per_day:>6,.1f}  {s.r_squared:>5.2f}  "
               f"{s.steadiness:>6.2f}  {s.verdict}")
+    return 0
+
+
+def _cmd_autopilot(args) -> int:
+    c = PolymarketPublicClient()
+    params = QualifyParams(
+        asset=args.asset, hours=args.hours, markets=args.markets,
+        candidates=args.candidates, days=args.days,
+        min_volume_usd=args.min_volume, min_pnl_usd=args.min_pnl,
+        min_steadiness=args.min_steadiness, min_conviction=args.min_conviction,
+        min_median_clip_usd=args.min_clip,
+        max_minutes_since_trade=args.max_idle_minutes,
+    )
+    print(f"[1/3] scanning fast {args.asset} markets (last {args.hours:.1f}h)...",
+          file=sys.stderr)
+    qualified = qualify_whales(c, params)[: args.top]
+
+    if not args.no_persist:
+        path = persist_watchlist(args.asset, qualified, params)
+        print(f"[2/3] watchlist saved -> {path}", file=sys.stderr)
+    else:
+        print(f"[2/3] persistence skipped (--no-persist)", file=sys.stderr)
+
+    if args.json:
+        print(json.dumps([q.to_dict() for q in qualified], indent=2))
+    else:
+        _print_qualified_table(args.asset, qualified)
+
+    if args.no_watch or not qualified:
+        if not qualified:
+            print("\nNo wallets passed all qualification gates.", file=sys.stderr)
+        return 0
+
+    wallets = [q.proxy_wallet for q in qualified]
+    hints = style_hint_map(qualified)
+    print(f"\n[3/3] streaming live signals from {len(wallets)} wallets "
+          f"(Ctrl-C to stop)...", file=sys.stderr)
+    return asyncio.run(_run_watch_with_hints(wallets, hints))
+
+
+def _print_qualified_table(asset: str, qualified) -> None:
+    print(f"\nQualified {asset} whales (conviction + edge):\n")
+    print(
+        f"{'#':>3}  {'wallet':42}  {'pseudonym':20}  "
+        f"{'PnL':>9}  {'$/day':>9}  {'R^2':>4}  "
+        f"{'steady':>6}  {'conv':>5}  {'medClip':>8}  {'idle':>5}  style"
+    )
+    print("-" * 135)
+    for i, q in enumerate(qualified, 1):
+        pseu = (q.pseudonym or "—")[:20]
+        print(
+            f"{i:>3}  {q.proxy_wallet:42}  {pseu:20}  "
+            f"${q.pnl.total_realized_pnl:>7,.0f}  "
+            f"${q.pnl.slope_usd_per_day:>7,.0f}  "
+            f"{q.pnl.r_squared:>4.2f}  "
+            f"{q.pnl.steadiness:>6.2f}  "
+            f"{q.conviction.conviction_score:>5.2f}  "
+            f"${q.conviction.median_clip_usd:>6,.1f}  "
+            f"{q.minutes_since_last_trade:>4.0f}m  "
+            f"{q.style_hint()}"
+        )
+
+
+async def _run_watch_with_hints(wallets, hints):
+    try:
+        async for sig in watch_wallets(wallets, style_hints=hints):
+            print(json.dumps(sig.to_dict(), separators=(",", ":")), flush=True)
+    except KeyboardInterrupt:
+        return 0
     return 0
 
 

@@ -45,39 +45,47 @@ Python 3.10+. The only runtime deps are `requests` and `websockets`.
 
 ## Quickstart
 
+The headline command:
+
 ```bash
-# Resolve a handle to an address
-polywhale resolve boneweeper
-
-# Find the biggest wallets across BTC markets by USD exposure
-polywhale discover --asset BTC --top 20
-
-# Rank wallets by USDC volume in fast (5m/15m) BTC markets over the last 6h
-polywhale scan-fast --asset BTC --hours 6 --top 25
-
-# Fingerprint a single wallet (algorithmic-behavior score + style)
-polywhale analyze 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5
-
-# Reconstruct a wallet's PnL trajectory (auto-buckets hourly vs daily)
-polywhale pnl 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5 --days 14
-
-# scan-fast -> PnL filter -> ranked watchlist of steady winners
-polywhale qualify --asset BTC --hours 6 --candidates 25 --min-steadiness 0.5
-
-# Macro snapshot of BTC markets
-polywhale macro --asset BTC
-
-# Stream copy signals from a watchlist (Ctrl-C to stop)
-polywhale watch 0xb17a1076a5ce053bd117a6eb51b309678d26f7e5
+# 1. Find the BTC whales with conviction + edge, then live-stream their trades.
+polywhale autopilot --asset BTC
 ```
 
-Add `--json` to any command for machine-readable output.
+`autopilot` chains the whole pipeline in one shot: scans recent fast crypto
+markets for active scalpers, drops anyone with tiny sprayed clips, drops
+anyone whose reconstructed PnL isn't provably positive and steady, persists
+the qualified watchlist to `data/latest_btc.json`, and then opens the
+public WSS feed and streams `CopySignal` events from those wallets as they
+trade. Each signal carries a `style_hint` reflecting the source wallet's
+qualified profile (`steady_high_conviction`, `steady_low_conviction`, etc).
 
-`qualify` is the main entry point for copy-trade prep: it scans recent fast
-markets, ranks wallets by USDC volume, reconstructs each candidate's PnL
-trajectory, and outputs the subset with positive realized PnL and high
-steadiness (slope, R^2 of the trend line, small drawdowns, mostly winning
-days/hours).
+Filters worth knowing:
+
+| Flag | What it does | Default |
+|------|--------------|---------|
+| `--hours` | Scan-fast look-back window. | `6` |
+| `--days` | PnL-trajectory window. | `7` |
+| `--min-volume` | Drop wallets with < $N USDC volume in the scan window. | `1500` |
+| `--min-steadiness` | Composite PnL steadiness score (0-1). | `0.45` |
+| `--min-conviction` | Composite conviction score (clip size + repeat-pattern). | `0.20` |
+| `--min-clip` | Drop wallets whose median clip is below this. | `0` |
+| `--max-idle-minutes` | Drop wallets that haven't traded recently. | `240` |
+| `--top` | Cap the watchlist to N wallets. | `10` |
+| `--no-watch` | Stop after persistence; don't open the WSS stream. | off |
+
+Other commands (all `--json`-able):
+
+```bash
+polywhale resolve boneweeper                       # handle -> address
+polywhale discover --asset BTC --top 20            # top holders by USD exposure
+polywhale scan-fast --asset BTC --hours 6          # volume in 5m/15m markets
+polywhale analyze 0xb17a...                        # algo-behavior fingerprint
+polywhale pnl 0xb17a... --days 14                  # reconstructed PnL curve
+polywhale qualify --asset BTC --min-steadiness 0.5 # scan-fast + PnL filter only
+polywhale macro --asset BTC                        # market-landscape snapshot
+polywhale watch 0xb17a... 0xc790...                # raw WSS stream from wallets
+```
 
 ## Architecture
 
@@ -86,13 +94,16 @@ polywhale/
   api.py        REST client: data-api + gamma-api + clob
   ws.py         WSS client: ws-live-data
   fast.py       fast-market detector (5m/15m Up-or-Down)
-  discover.py   find top holders of a market / asset (USD exposure)
-  scan.py       rank wallets by USDC volume in fast markets
+  discover.py   top holders by USD exposure (slow markets)
+  scan.py       USDC-volume aggregator for fast markets
   analyze.py    algorithmic-behavior fingerprinter
   pnl.py        PnL trajectory + steadiness metrics
+  conviction.py clip-size + repeat-pattern conviction scorer
   macro.py      market-landscape snapshot
   watch.py      live signal emitter (CopySignal stream)
   signal.py     CopySignal dataclass
+  persist.py    watchlist persistence to $POLYWHALE_DATA_DIR
+  autopilot.py  end-to-end qualify pipeline
   cli.py        argparse entrypoint
 ```
 
