@@ -12,13 +12,13 @@ on:
         default: 'false'
 
 permissions:
-  contents: write       # commit findings
-  issues: write         # open decay-alert issues
+  contents: write
+  issues: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 45   # wallet scrape can take ~20 min for 50 wallets
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -38,12 +38,7 @@ jobs:
       - name: Run edge scan
         id: scan
         run: python scripts/edge_scan.py
-        # Exit code 2 = HIGH decay alert; we catch it below
         continue-on-error: true
-
-      - name: Capture scan exit code
-        id: exit_code
-        run: echo "code=${{ steps.scan.outcome == 'failure' && '2' || '0' }}" >> $GITHUB_OUTPUT
 
       - name: Commit findings
         run: |
@@ -58,71 +53,76 @@ jobs:
             git push
           fi
 
-      - name: Open decay-alert issue
+      - name: Build issue body
+        id: issue_body
         if: steps.scan.outcome == 'failure' || github.event.inputs.force_issue == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
+        run: |
+          python3 - <<'PYEOF'
+          import glob, json, os, sys
 
-            // Find the latest scan JSON
-            const dataDir = 'findings';
-            const files = fs.readdirSync(dataDir)
-              .filter(f => f.startsWith('edge_scan_') && f.endsWith('.json'))
-              .sort();
+          files = sorted(glob.glob("findings/edge_scan_*.json"))
+          if not files:
+              print("No scan files found.")
+              sys.exit(0)
 
-            if (!files.length) {
-              core.warning('No scan files found — cannot open issue.');
-              return;
-            }
+          latest = json.load(open(files[-1]))
+          alerts = latest.get("decay_alerts", [])
+          high = [a for a in alerts if a["severity"] == "HIGH"]
+          patterns = latest.get("cross_wallet_patterns", [])[:5]
+          date = latest.get("date", "unknown")
 
-            const latest = JSON.parse(fs.readFileSync(path.join(dataDir, files[files.length - 1])));
-            const alerts = latest.decay_alerts || [];
-            const high = alerts.filter(a => a.severity === 'HIGH');
+          rows = "\n".join(
+              f"| {'HIGH' if a['severity']=='HIGH' else 'MEDIUM'} | {a['pattern']} "
+              f"| ${a['old_ev']:.3f} | ${a['new_ev']:.3f} | {a['pct_drop']*100:.0f}% |"
+              for a in alerts
+          ) or "*(none)*"
 
-            if (!high.length && github.event.inputs.force_issue !== 'true') return;
+          pat_rows = "\n".join(
+              f"| {p['bucket_label']} | {p['wallet_count']} | ${p['avg_ev_per_trade']:.3f} "
+              f"| {p['avg_true_wr']*100:.1f}% | {'yes' if p['passes_cross_wallet'] else 'no'} |"
+              for p in patterns
+          ) or "*(none)*"
 
-            const rows = alerts.map(a =>
-              `| ${a.severity === 'HIGH' ? '🔴' : '🟡'} ${a.pattern} | \$${a.old_ev} | \$${a.new_ev} | ${(a.pct_drop * 100).toFixed(0)}% |`
-            ).join('\n');
+          body = f"""## Edge Decay Alert -- {date}
 
-            const patterns = (latest.cross_wallet_patterns || []).slice(0, 5).map(p =>
-              `| ${p.bucket_label} | ${p.wallet_count} | \$${p.avg_ev_per_trade} | ${(p.avg_true_wr * 100).toFixed(1)}% | ${p.passes_cross_wallet ? '✓' : '—'} |`
-            ).join('\n');
+          {len(high)} HIGH severity decay(s) detected. Review and consider swapping strategy.
 
-            const body = `## Edge Decay Alert — ${latest.date}
+          ### Decay Alerts
+          | Severity | Pattern | Old EV | New EV | Drop |
+          |---|---|---|---|---|
+          {rows}
 
-**${high.length} HIGH severity decays detected.** Review and consider swapping strategy.
+          ### Current Best Patterns
+          | Pattern | Wallets | EV/trade | WR | OOS |
+          |---|---|---|---|---|
+          {pat_rows}
 
-### Decay Alerts
-| Severity | Pattern | Old EV | New EV | Drop |
-|---|---|---|---|---|
-${rows || '*(none)*'}
+          ### Next Steps
+          1. Review findings/edge_scan_{date.replace('-','')}_*.json for full detail
+          2. Paper trade the top OOS-passing pattern (20+ fills) before live capital
+          """
 
-### Current Best Patterns
-| Pattern | Wallets | EV/trade | WR | OOS |
-|---|---|---|---|---|
-${patterns || '*(no cross-wallet patterns found)*'}
+          title = f"Edge decay detected -- {date} ({len(high)} HIGH alert{'s' if len(high)!=1 else ''})"
 
-### Next Steps
-1. Review \`data/edge_scan_${latest.date.replace(/-/g,'')}_*.json\` for full detail
-2. Run \`python research/edge_monitor.py --recommend\` in arb-market for strategy swap recommendation
-3. Paper trade the top OOS-passing pattern (20+ fills) before any live capital
+          # Write to env files for next step
+          delimiter = "EOF_BODY"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"title={title}\n")
+              f.write(f"body<<{delimiter}\n{body}\n{delimiter}\n")
+              f.write(f"high_count={len(high)}\n")
+          PYEOF
 
-_Auto-opened by [edge_monitor workflow](../actions/workflows/edge_monitor.yml)_
-`;
-
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `⚠️ Edge decay detected — ${latest.date} (${high.length} HIGH alert${high.length !== 1 ? 's' : ''})`,
-              body,
-              labels: ['edge-decay', 'automated'],
-            });
+      - name: Open decay-alert issue
+        if: steps.issue_body.outputs.high_count > 0 || github.event.inputs.force_issue == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "${{ steps.issue_body.outputs.title }}" \
+            --body "${{ steps.issue_body.outputs.body }}" \
+            --label "edge-decay,automated"
 
       - name: Summary
         if: always()
         run: |
-          echo "Scan complete. Check data/ for findings."
           ls -la findings/edge_scan_*.json 2>/dev/null | tail -5 || echo "No scan files yet."
