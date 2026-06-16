@@ -27,3 +27,5 @@ logs/
 .DS_Store
 .idea/
 .vscode/
+
+# findings/ is committed (not raw data)
