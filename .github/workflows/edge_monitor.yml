@@ -15,6 +15,10 @@ permissions:
   contents: write
   issues: write
 
+concurrency:
+  group: edge-monitor
+  cancel-in-progress: true
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -49,6 +53,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nothing new to commit."
           else
+            git pull --rebase origin main || true
             git commit -m "chore: edge scan $(date -u '+%Y-%m-%d %H:%M UTC')"
             git push
           fi
