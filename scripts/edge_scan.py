@@ -64,11 +64,10 @@ def fetch_top_wallets(n: int = TOP_N) -> List[Dict]:
     req = urllib.request.Request(url, headers={"User-Agent": "polywhale-edge-scan/1.0"})
     with urllib.request.urlopen(req, timeout=15) as r:
         rows = json.loads(r.read())
-    # Filter: require minimum realized profit
+    # Filter: require minimum realized profit (lb-api returns USDC directly)
     results = []
     for row in rows:
-        raw = float(row.get("amount", 0) or 0)
-        usd = raw / 1e6  # raw is in micro-USDC
+        usd = float(row.get("amount", 0) or 0)
         if usd >= MIN_TRUE_PROFIT_USD:
             results.append({
                 "proxy_wallet": row.get("proxyWallet") or row.get("proxy_wallet", ""),
@@ -92,7 +91,7 @@ def fetch_full_activity(client: PolymarketPublicClient, wallet: str) -> List[Dic
             wallet,
             limit=500,
             offset=0,           # always 0 — cursor does the pagination
-            types=("TRADE",),   # TRADE includes both BUY and REDEEM sub-types
+            types=("TRADE", "REDEEM"),  # must fetch REDEEM separately (wins)
             end=end_cursor,
         )
         if not batch:
