@@ -1,0 +1,449 @@
+{
+  "date": "2026-07-22",
+  "timestamp": "2026-07-22T16:31:16.004089+00:00",
+  "wallets_analyzed": 20,
+  "wallet_stats": [
+    {
+      "wallet": "0x56687bf447db6ffa42ffe2204a05edaa20f55839",
+      "lb_profit_usd": 22053933.75,
+      "total_trades": 15982,
+      "true_wr": 0.9994,
+      "true_ev_per_trade": 1363.9401,
+      "pattern_count": 4
+    },
+    {
+      "wallet": "0x204f72f35326db932158cba6adff0b9a1da95e14",
+      "lb_profit_usd": 21945916.01,
+      "total_trades": 19090,
+      "true_wr": 0.8551,
+      "true_ev_per_trade": 70.6912,
+      "pattern_count": 12
+    },
+    {
+      "wallet": "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+      "lb_profit_usd": 16619506.63,
+      "total_trades": 19958,
+      "true_wr": 0.9992,
+      "true_ev_per_trade": 1142.8222,
+      "pattern_count": 11
+    },
+    {
+      "wallet": "0x664ce9fb97ae1bbd538d7381b2f4e92dab16f49c",
+      "lb_profit_usd": 8474966.27,
+      "total_trades": 1025,
+      "true_wr": 0.922,
+      "true_ev_per_trade": 7769.7241,
+      "pattern_count": 3
+    },
+    {
+      "wallet": "0xd235973291b2b75ff4070e9c0b01728c520b0f29",
+      "lb_profit_usd": 7807265.59,
+      "total_trades": 12534,
+      "true_wr": 0.8737,
+      "true_ev_per_trade": 530.2393,
+      "pattern_count": 3
+    },
+    {
+      "wallet": "0x3f87d51f27ba6e19ec52aaeebb68559a839c742c",
+      "lb_profit_usd": 7602742.06,
+      "total_trades": 670,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 10723.3829,
+      "pattern_count": 2
+    },
+    {
+      "wallet": "0x863134d00841b2e200492805a01e1e2f5defaa53",
+      "lb_profit_usd": 7532409.67,
+      "total_trades": 6817,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 1048.7631,
+      "pattern_count": 4
+    },
+    {
+      "wallet": "0x5e4c3b5b81171e2ca4ab776ac0d6bba787f9dba2",
+      "lb_profit_usd": 7409836.65,
+      "total_trades": 474,
+      "true_wr": 0.8544,
+      "true_ev_per_trade": 14458.1208,
+      "pattern_count": 4
+    },
+    {
+      "wallet": "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+      "lb_profit_usd": 7247951.19,
+      "total_trades": 19636,
+      "true_wr": 0.9877,
+      "true_ev_per_trade": 272.4535,
+      "pattern_count": 9
+    },
+    {
+      "wallet": "0xf0318c32136c2db7fec88b84869aee6a1106c80c",
+      "lb_profit_usd": 6724276.37,
+      "total_trades": 16625,
+      "true_wr": 0.2724,
+      "true_ev_per_trade": -20.1088,
+      "pattern_count": 7
+    },
+    {
+      "wallet": "0x8119010a6e589062aa03583bb3f39ca632d9f887",
+      "lb_profit_usd": 6083643.1,
+      "total_trades": 6821,
+      "true_wr": 0.9985,
+      "true_ev_per_trade": 1603.1822,
+      "pattern_count": 5
+    },
+    {
+      "wallet": "0xe9ad918c7678cd38b12603a762e638a5d1ee7091",
+      "lb_profit_usd": 5942685.45,
+      "total_trades": 4719,
+      "true_wr": 0.0,
+      "true_ev_per_trade": -2199.8227,
+      "pattern_count": 2
+    },
+    {
+      "wallet": "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+      "lb_profit_usd": 5711459.8,
+      "total_trades": 3202,
+      "true_wr": 0.7042,
+      "true_ev_per_trade": 1793.0193,
+      "pattern_count": 5
+    },
+    {
+      "wallet": "0x885783760858e1bd5dd09a3c3f916cfa251ac270",
+      "lb_profit_usd": 5642135.74,
+      "total_trades": 6472,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 826.1161,
+      "pattern_count": 4
+    },
+    {
+      "wallet": "0x23786fdad0073692157c6d7dc81f281843a35fcb",
+      "lb_profit_usd": 5147998.54,
+      "total_trades": 11800,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 434.9167,
+      "pattern_count": 5
+    },
+    {
+      "wallet": "0xefbc5fec8d7b0acdc8911bdd9a98d6964308f9a2",
+      "lb_profit_usd": 3742635.16,
+      "total_trades": 1931,
+      "true_wr": 0.7763,
+      "true_ev_per_trade": 2476.7091,
+      "pattern_count": 3
+    },
+    {
+      "wallet": "0x019782cab5d844f02bafb71f512758be78579f3c",
+      "lb_profit_usd": 3668541.58,
+      "total_trades": 863,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 3957.4643,
+      "pattern_count": 3
+    },
+    {
+      "wallet": "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227",
+      "lb_profit_usd": 2931892.15,
+      "total_trades": 16305,
+      "true_wr": 0.8998,
+      "true_ev_per_trade": 432.8189,
+      "pattern_count": 11
+    },
+    {
+      "wallet": "0x36a3f17401e395ef4cb1b7f42bcdb8ab8e15fafb",
+      "lb_profit_usd": 2930573.33,
+      "total_trades": 1936,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 4741.1531,
+      "pattern_count": 4
+    },
+    {
+      "wallet": "0xd6505aab3c6bef32ae6c96dbd8023d7c4df114fb",
+      "lb_profit_usd": 2815019.1,
+      "total_trades": 4704,
+      "true_wr": 1.0,
+      "true_ev_per_trade": 3492.837,
+      "pattern_count": 3
+    }
+  ],
+  "cross_wallet_patterns": [
+    {
+      "bucket_label": "other|<0.50",
+      "market_type": "other",
+      "price_bucket": "<0.50",
+      "wallet_count": 18,
+      "total_trades": 24901,
+      "avg_ev_per_trade": 11496.0631,
+      "avg_true_wr": 0.847,
+      "oos_passing_wallets": 14,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x56687bf447db6ffa42ffe2204a05edaa20f55839",
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x664ce9fb97ae1bbd538d7381b2f4e92dab16f49c",
+        "0x3f87d51f27ba6e19ec52aaeebb68559a839c742c",
+        "0x863134d00841b2e200492805a01e1e2f5defaa53",
+        "0x5e4c3b5b81171e2ca4ab776ac0d6bba787f9dba2",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0xf0318c32136c2db7fec88b84869aee6a1106c80c",
+        "0x8119010a6e589062aa03583bb3f39ca632d9f887",
+        "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+        "0x885783760858e1bd5dd09a3c3f916cfa251ac270",
+        "0x23786fdad0073692157c6d7dc81f281843a35fcb",
+        "0xefbc5fec8d7b0acdc8911bdd9a98d6964308f9a2",
+        "0x019782cab5d844f02bafb71f512758be78579f3c",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227",
+        "0x36a3f17401e395ef4cb1b7f42bcdb8ab8e15fafb",
+        "0xd6505aab3c6bef32ae6c96dbd8023d7c4df114fb"
+      ]
+    },
+    {
+      "bucket_label": "other|0.50-0.60",
+      "market_type": "other",
+      "price_bucket": "0.50-0.60",
+      "wallet_count": 12,
+      "total_trades": 8073,
+      "avg_ev_per_trade": 6335.7975,
+      "avg_true_wr": 0.9247,
+      "oos_passing_wallets": 7,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x664ce9fb97ae1bbd538d7381b2f4e92dab16f49c",
+        "0x3f87d51f27ba6e19ec52aaeebb68559a839c742c",
+        "0x5e4c3b5b81171e2ca4ab776ac0d6bba787f9dba2",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+        "0xefbc5fec8d7b0acdc8911bdd9a98d6964308f9a2",
+        "0x019782cab5d844f02bafb71f512758be78579f3c",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227",
+        "0x36a3f17401e395ef4cb1b7f42bcdb8ab8e15fafb",
+        "0xd6505aab3c6bef32ae6c96dbd8023d7c4df114fb"
+      ]
+    },
+    {
+      "bucket_label": "politics|<0.50",
+      "market_type": "politics",
+      "price_bucket": "<0.50",
+      "wallet_count": 6,
+      "total_trades": 22955,
+      "avg_ev_per_trade": 3182.2488,
+      "avg_true_wr": 0.9998,
+      "oos_passing_wallets": 6,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x56687bf447db6ffa42ffe2204a05edaa20f55839",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x863134d00841b2e200492805a01e1e2f5defaa53",
+        "0x8119010a6e589062aa03583bb3f39ca632d9f887",
+        "0x885783760858e1bd5dd09a3c3f916cfa251ac270",
+        "0x23786fdad0073692157c6d7dc81f281843a35fcb"
+      ]
+    },
+    {
+      "bucket_label": "other|0.60-0.70",
+      "market_type": "other",
+      "price_bucket": "0.60-0.70",
+      "wallet_count": 10,
+      "total_trades": 13176,
+      "avg_ev_per_trade": 2903.4554,
+      "avg_true_wr": 0.9747,
+      "oos_passing_wallets": 9,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x664ce9fb97ae1bbd538d7381b2f4e92dab16f49c",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+        "0xefbc5fec8d7b0acdc8911bdd9a98d6964308f9a2",
+        "0x019782cab5d844f02bafb71f512758be78579f3c",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227",
+        "0x36a3f17401e395ef4cb1b7f42bcdb8ab8e15fafb",
+        "0xd6505aab3c6bef32ae6c96dbd8023d7c4df114fb"
+      ]
+    },
+    {
+      "bucket_label": "other|0.70-0.80",
+      "market_type": "other",
+      "price_bucket": "0.70-0.80",
+      "wallet_count": 6,
+      "total_trades": 4365,
+      "avg_ev_per_trade": 2759.7961,
+      "avg_true_wr": 0.9812,
+      "oos_passing_wallets": 5,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x5e4c3b5b81171e2ca4ab776ac0d6bba787f9dba2",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+        "0x36a3f17401e395ef4cb1b7f42bcdb8ab8e15fafb"
+      ]
+    },
+    {
+      "bucket_label": "sports|<0.50",
+      "market_type": "sports",
+      "price_bucket": "<0.50",
+      "wallet_count": 4,
+      "total_trades": 1478,
+      "avg_ev_per_trade": 2067.9237,
+      "avg_true_wr": 0.6278,
+      "oos_passing_wallets": 2,
+      "passes_cross_wallet": false,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0xf0318c32136c2db7fec88b84869aee6a1106c80c",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227"
+      ]
+    },
+    {
+      "bucket_label": "politics|0.70-0.80",
+      "market_type": "politics",
+      "price_bucket": "0.70-0.80",
+      "wallet_count": 3,
+      "total_trades": 136,
+      "avg_ev_per_trade": 1868.7253,
+      "avg_true_wr": 1.0,
+      "oos_passing_wallets": 2,
+      "passes_cross_wallet": false,
+      "wallets": [
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x8119010a6e589062aa03583bb3f39ca632d9f887",
+        "0x23786fdad0073692157c6d7dc81f281843a35fcb"
+      ]
+    },
+    {
+      "bucket_label": "politics|0.50-0.60",
+      "market_type": "politics",
+      "price_bucket": "0.50-0.60",
+      "wallet_count": 7,
+      "total_trades": 22575,
+      "avg_ev_per_trade": 862.6736,
+      "avg_true_wr": 1.0,
+      "oos_passing_wallets": 7,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x56687bf447db6ffa42ffe2204a05edaa20f55839",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0xd235973291b2b75ff4070e9c0b01728c520b0f29",
+        "0x863134d00841b2e200492805a01e1e2f5defaa53",
+        "0x8119010a6e589062aa03583bb3f39ca632d9f887",
+        "0x885783760858e1bd5dd09a3c3f916cfa251ac270",
+        "0x23786fdad0073692157c6d7dc81f281843a35fcb"
+      ]
+    },
+    {
+      "bucket_label": "politics|0.60-0.70",
+      "market_type": "politics",
+      "price_bucket": "0.60-0.70",
+      "wallet_count": 7,
+      "total_trades": 30204,
+      "avg_ev_per_trade": 804.511,
+      "avg_true_wr": 1.0,
+      "oos_passing_wallets": 7,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x56687bf447db6ffa42ffe2204a05edaa20f55839",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0xd235973291b2b75ff4070e9c0b01728c520b0f29",
+        "0x863134d00841b2e200492805a01e1e2f5defaa53",
+        "0x8119010a6e589062aa03583bb3f39ca632d9f887",
+        "0x885783760858e1bd5dd09a3c3f916cfa251ac270",
+        "0x23786fdad0073692157c6d7dc81f281843a35fcb"
+      ]
+    },
+    {
+      "bucket_label": "sports|0.50-0.60",
+      "market_type": "sports",
+      "price_bucket": "0.50-0.60",
+      "wallet_count": 3,
+      "total_trades": 1122,
+      "avg_ev_per_trade": 417.9014,
+      "avg_true_wr": 0.628,
+      "oos_passing_wallets": 2,
+      "passes_cross_wallet": false,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227"
+      ]
+    },
+    {
+      "bucket_label": "other|0.80-0.90",
+      "market_type": "other",
+      "price_bucket": "0.80-0.90",
+      "wallet_count": 6,
+      "total_trades": 3983,
+      "avg_ev_per_trade": 284.2998,
+      "avg_true_wr": 0.956,
+      "oos_passing_wallets": 3,
+      "passes_cross_wallet": true,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0xf0318c32136c2db7fec88b84869aee6a1106c80c",
+        "0x94f199fb7789f1aef7fff6b758d6b375100f4c7a",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227"
+      ]
+    },
+    {
+      "bucket_label": "other|0.90+",
+      "market_type": "other",
+      "price_bucket": "0.90+",
+      "wallet_count": 3,
+      "total_trades": 17379,
+      "avg_ev_per_trade": 80.3012,
+      "avg_true_wr": 0.9841,
+      "oos_passing_wallets": 2,
+      "passes_cross_wallet": false,
+      "wallets": [
+        "0x1f2dd6d473f3e824cd2f8a89d9c69fb96f6ad0cf",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227"
+      ]
+    },
+    {
+      "bucket_label": "sports|0.90+",
+      "market_type": "sports",
+      "price_bucket": "0.90+",
+      "wallet_count": 3,
+      "total_trades": 161,
+      "avg_ev_per_trade": 61.2389,
+      "avg_true_wr": 0.9794,
+      "oos_passing_wallets": 2,
+      "passes_cross_wallet": false,
+      "wallets": [
+        "0x204f72f35326db932158cba6adff0b9a1da95e14",
+        "0x2c335066fe58fe9237c3d3dc7b275c2a034a0563",
+        "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227"
+      ]
+    }
+  ],
+  "decay_alerts": [
+    {
+      "pattern": "politics|0.60-0.70",
+      "old_ev": 1164.8696,
+      "new_ev": 804.511,
+      "pct_drop": 0.309,
+      "severity": "MEDIUM"
+    },
+    {
+      "pattern": "sports|0.50-0.60",
+      "old_ev": 1549.2214,
+      "new_ev": 417.9014,
+      "pct_drop": 0.73,
+      "severity": "HIGH"
+    },
+    {
+      "pattern": "other|0.80-0.90",
+      "old_ev": 1592.0426,
+      "new_ev": 284.2998,
+      "pct_drop": 0.821,
+      "severity": "HIGH"
+    }
+  ]
+}
